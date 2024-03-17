@@ -145,27 +145,21 @@ function ve() {
 }
 
 ############################################################################
-## Définir la variable d’environnement TERM à screen-256color, qui est     #
-## la même valeur que celle définie dans la configuration de tmux.         #
-## Cela permettra à tmux de prendre en charge les 256 couleurs dans les    #
-## terminaux qui le prennent en charge.                                    #
-############################################################################
-export TERM=screen-256color
-
-############################################################################
 ## WSL - Windows home directory of the current User                        #
 ############################################################################
-unset WINHOME
 if grep -qi Microsoft /proc/version; then
-	export WINHOME=/mnt/c/Users/galan
-	alias xclip='xclip -sel clip'
+  unset WINHOME
+  export WINHOME=/mnt/c/Users/galan
+  alias xclip='xclip -sel clip'
 fi
 
 ############################################################################
 ## Jupyter Lab : Sandbox environment                                       #
 ############################################################################
-export SANDBOX_HOME="$HOME/workspace/sandbox"
-export BROWSER="/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+export SANDBOX_HOME="$HOME/Workspace/sandbox"
+if grep -qi Microsoft /proc/version; then
+	export BROWSER="/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+fi
 function jl() { # to start jupyter lab sandbox environnement
 	ve $SANDBOX_HOME
 	jupyter lab
@@ -210,12 +204,7 @@ if [ -s "$NVM_DIR/bash_completion" ]; then
 fi
 
 ############################################################################
-## My own nvim scripts                                                     #
-############################################################################
-export PATH=$PATH:~/.config/nvim/scripts
-
-############################################################################
-## Start tstartship shell                                                  #
+## Start startship shell                                                   #
 ############################################################################
 eval "$(starship init bash)"
 
