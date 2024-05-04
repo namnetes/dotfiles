@@ -189,18 +189,12 @@ source ~/.git-completion.bash
 ############################################################################
 ## NodeJS                                                                  #
 ############################################################################
-export NVM_DIR=$HOME/.nvm
+export nvm_dir="${XDG_CONFIG_HOME:-$HOME/.nvm}"
 
-# Loads NVM
-if [ -s "$NVM_DIR/nvm.sh" ]; then
-	# shellcheck source=/home/galan/.nvm
-	source "$NVM_DIR/nvm.sh"
-fi
-
-# Loads NVM bash_completion
-if [ -s "$NVM_DIR/bash_completion" ]; then
-	# shellcheck source=/home/galan/.nvm
-	source "$NVM_DIR/bash_completion"
+# Check if nvm.sh exists in the determined directory
+if [[ -f "$nvm_dir/nvm.sh" ]]; then
+  # Load nvm by sourcing the nvm.sh script
+  source "$nvm_dir/nvm.sh"
 fi
 
 ############################################################################
