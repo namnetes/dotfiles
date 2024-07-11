@@ -169,6 +169,16 @@ function rh() {
     head "$@"
 }
 
+# Integration of the `rule` function with the `tail` command, with `rule`
+# being called before `tail`.
+function th() {
+    # Call the rule function to display the dynamic rule
+    rule
+
+    # Call the tail command with all the provided arguments
+    tail "$@"
+}
+
 ############################################################################
 ## WSL - Windows home directory of the current User                        #
 ############################################################################
