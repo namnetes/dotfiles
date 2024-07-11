@@ -144,6 +144,21 @@ function ve() {
 	fi
 }
 
+# Display Rules
+function rule() {
+    # Determine the width of the terminal
+    local width=$(tput cols)
+
+    # Create a string filled with '0' with the length of the terminal width
+    local rule=$(printf "%*s" $width "" | tr ' ' '0')
+
+    # Replace each 0 with the sequence +123456789
+    rule=$(echo $rule | sed 's/0/+123456789/g')
+
+    # Display the rule (truncated to terminal width)
+    echo "${rule:0:$width}"
+}
+
 ############################################################################
 ## WSL - Windows home directory of the current User                        #
 ############################################################################
@@ -210,3 +225,4 @@ eval "$(starship init bash)"
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
 export GTK_MODULES=canberra-gtk-module
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
