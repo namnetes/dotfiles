@@ -7,22 +7,26 @@ clean_path() {
     # Split PATH into an array
     IFS=':' read -r -a path_array <<<"$PATH"
 
-    # Use an associative array to track unique paths
+    # Use a temporary array to store unique paths while preserving order
+    declare -a unique_paths=()
+
+    # Use a associative array to track seen paths
     declare -A seen
 
-    # Rebuild the PATH with unique entries
-    unique_path=""
+    # Iterate over each path in path_array
     for dir in "${path_array[@]}"; do
         if [[ -n "$dir" && -z "${seen[$dir]}" ]]; then
-            # If the path is not empty and hasn't been seen before, add it
-            unique_path="${unique_path:+$unique_path:}$dir"
+            # If path is not empty and hasn't been seen before, add it to
+            # unique_paths
+            unique_paths+=("$dir")
             seen[$dir]=1
         fi
     done
 
-    # Export the cleaned PATH
-    export PATH="$unique_path"
+    # Rebuild the PATH variable with unique paths in the original order
+    export PATH=$(IFS=':'; echo "${unique_paths[*]}")
 }
+
 
 # To display the path one line per path
 function path() {

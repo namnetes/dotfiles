@@ -117,6 +117,6 @@ if ! shopt -oq posix; then
 fi
 
 # Customization sourced from ~/.bash_custom if it exists.
-if [ -f "$HOME/.bash_custom" ]; then
-    . "$HOME/.bash_custom"
+if [ -f "$HOME/.bashrc_custom" ]; then
+    . "$HOME/.bashrc_custom"
 fi
