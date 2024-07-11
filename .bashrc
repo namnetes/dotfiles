@@ -159,6 +159,16 @@ function rule() {
     echo "${rule:0:$width}"
 }
 
+# Integration of the `rule` function with the `head` command, with `rule`
+# being called before `head`.
+function rh() {
+    # Call the rule function to display the dynamic rule
+    rule
+
+    # Call the head command with all the provided arguments
+    head "$@"
+}
+
 ############################################################################
 ## WSL - Windows home directory of the current User                        #
 ############################################################################
