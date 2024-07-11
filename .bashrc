@@ -4,8 +4,8 @@
 
 # If not running interactively, don't do anything
 case $- in
-    *i*) ;;
-      *) return;;
+*i*) ;;
+*) return ;;
 esac
 
 # don't put duplicate lines or lines starting with space in the history.
@@ -37,7 +37,7 @@ fi
 
 # set a fancy prompt (non-color, unless we know we "want" color)
 case "$TERM" in
-    xterm-color|*-256color) color_prompt=yes;;
+xterm-color | *-256color) color_prompt=yes ;;
 esac
 
 # uncomment for a colored prompt, if the terminal has the capability; turned
@@ -47,12 +47,12 @@ esac
 
 if [ -n "$force_color_prompt" ]; then
     if [ -x /usr/bin/tput ] && tput setaf 1 >&/dev/null; then
-	# We have color support; assume it's compliant with Ecma-48
-	# (ISO/IEC-6429). (Lack of such support is extremely rare, and such
-	# a case would tend to support setf rather than setaf.)
-	color_prompt=yes
+        # We have color support; assume it's compliant with Ecma-48
+        # (ISO/IEC-6429). (Lack of such support is extremely rare, and such
+        # a case would tend to support setf rather than setaf.)
+        color_prompt=yes
     else
-	color_prompt=
+        color_prompt=
     fi
 fi
 
@@ -65,11 +65,10 @@ unset color_prompt force_color_prompt
 
 # If this is an xterm set the title to user@host:dir
 case "$TERM" in
-xterm*|rxvt*)
+xterm* | rxvt*)
     PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
     ;;
-*)
-    ;;
+*) ;;
 esac
 
 # enable color support of ls and also add handy aliases
@@ -96,182 +95,28 @@ alias l='ls -CF'
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
-# Alias definitions.
+# Source ~/.bash_aliases if it exists for additional aliases.
 # You may want to put all your additions into a separate file like
 # ~/.bash_aliases, instead of adding them here directly.
 # See /usr/share/doc/bash-doc/examples in the bash-doc package.
 
-if [ -f ~/.bash_aliases ]; then
-    . ~/.bash_aliases
+
+if [ -f "$HOME/.bash_aliases" ]; then
+    . "$HOME/.bash_aliases"
 fi
 
 # enable programmable completion features (you don't need to enable
 # this, if it's already enabled in /etc/bash.bashrc and /etc/profile
 # sources /etc/bash.bashrc).
 if ! shopt -oq posix; then
-  if [ -f /usr/share/bash-completion/bash_completion ]; then
-    . /usr/share/bash-completion/bash_completion
-  elif [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
-  fi
-fi
-
-############################################################################
-## Macros                                                                  #
-############################################################################
-
-# To display the path one line per path
-function path() {
-	echo $PATH | tr ':' '\n' | nl
-}
-
-# To display ldpath one line per path
-function ldpath() {
-	echo $LD_LIBRARY_PATH | tr ':' '\n' | nl
-}
-
-# To activate a Python environment
-function ve() {
-	if [ $# -eq 0 ]; then
-		if [ -d "./.venv" ]; then
-			source ./.venv/bin/activate
-		else
-			echo "No .venv directory found here in $PWD!"
-		fi
-	else
-		cd $1
-		source $1/.venv/bin/activate
-	fi
-}
-
-# Display Rules
-function rule() {
-    if [ $# -eq 0 ]; then
-        local offset=0   # No parameters, no space before the rule
-    else
-        local offset=$1  # The first parameter is the offset in spaces
+    if [ -f /usr/share/bash-completion/bash_completion ]; then
+        . /usr/share/bash-completion/bash_completion
+    elif [ -f /etc/bash_completion ]; then
+        . /etc/bash_completion
     fi
-
-    # Determine the width of the terminal
-    local width=$(tput cols)
-
-    # Create a string filled with '0' with the length of the terminal width
-    local rule=$(printf "%*s" $width "" | tr ' ' '0')
-
-    # Replace each 0 with the sequence +123456789
-    rule=$(echo $rule | sed 's/0/+123456789/g')
-
-    # Add offset spaces before displaying the rule
-    local spaces=$(printf "%${offset}s" "")
-    echo "${spaces}${rule:0:$width-$offset}"
-}
-
-# Integrating the rule function with the head command, where rule is invoked
-# before head.
-function rh() {
-    # Call the rule function to display the dynamic rule
-    rule
-
-    # Call the head command with all the provided arguments
-    head "$@"
-}
-
-# Integrating the rule function with the head command, where rule is invoked
-# before head, and preceding the display with the line length.
-function rhc() {
-    # Call the rule function to display the dynamic rule
-    rule 5
-
-    # Use head to get the first n lines
-    head_lines=$(head "$@")
-
-    # Process each line to prepend its length (always 4 characters)
-    while IFS= read -r line; do
-        # Calculate the length of the line
-        line_length=$(echo -n "$line" | wc -c)
-        
-        # Format line_length to always be 4 characters with leading spaces
-        line_length=$(printf "%4s" "$line_length")
-        
-        # Print the formatted output
-        printf "%s %s\n" "$line_length" "$line"
-    done <<< "$head_lines"
-}
-
-# Integrating the rule function with the tail command, where rule is invoked
-# before tail.
-function th() {
-    # Call the rule function to display the dynamic rule
-    rule
-
-    # Call the tail command with all the provided arguments
-    tail "$@"
-}
-
-############################################################################
-## WSL - Windows home directory of the current User                        #
-############################################################################
-if grep -qi Microsoft /proc/version; then
-  unset WINHOME
-  export WINHOME=/mnt/c/Users/galan
-  alias xclip='xclip -sel clip'
 fi
 
-############################################################################
-## Jupyter Lab : Sandbox environment                                       #
-############################################################################
-export SANDBOX_HOME="$HOME/Workspace/sandbox"
-if grep -qi Microsoft /proc/version; then
-	export BROWSER="/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+# Customization sourced from ~/.bash_custom if it exists.
+if [ -f "$HOME/.bash_custom" ]; then
+    . "$HOME/.bash_custom"
 fi
-function jl() { # to start jupyter lab sandbox environnement
-	ve $SANDBOX_HOME
-	jupyter lab
-	deactivate
-	cd $HOME
-}
-
-function ipy() { # to start ipython in the sandbox environnement
-	ve $SANDBOX_HOME
-	ipython
-	deactivate
-	cd $HOME
-}
-
-############################################################################
-## Git                                                                     #
-############################################################################
-
-## Git completion
-if [ ! -f "$HOME/.git-completion.bash" ]; then
-	echo "file does not exist"
-	curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o ~/.git-completion.bash
-fi
-
-source ~/.git-completion.bash
-
-############################################################################
-## NodeJS                                                                  #
-############################################################################
-export nvm_dir="${XDG_CONFIG_HOME:-$HOME/.nvm}"
-
-# Check if nvm.sh exists in the determined directory
-if [[ -f "$nvm_dir/nvm.sh" ]]; then
-  # Load nvm by sourcing the nvm.sh script
-  source "$nvm_dir/nvm.sh"
-fi
-
-############################################################################
-## Start startship shell                                                   #
-############################################################################
-eval "$(starship init bash)"
-
-############################################################################
-## Groovy                                                                  #
-## This must be at the end of the file for SDKMAN to work !                #
-############################################################################
-#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
-export SDKMAN_DIR="$HOME/.sdkman"
-[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
-export GTK_MODULES=canberra-gtk-module
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
