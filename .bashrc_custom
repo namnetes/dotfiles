@@ -24,9 +24,11 @@ clean_path() {
     done
 
     # Rebuild the PATH variable with unique paths in the original order
-    export PATH=$(IFS=':'; echo "${unique_paths[*]}")
+    export PATH=$(
+        IFS=':'
+        echo "${unique_paths[*]}"
+    )
 }
-
 
 # To display the path one line per path
 function path() {
@@ -131,35 +133,86 @@ fi
 ############################################################################
 ## Jupyter Lab : Sandbox environment                                       #
 ############################################################################
-export SANDBOX_HOME="$HOME/Workspace/sandbox"
-if grep -qi Microsoft /proc/version; then
-    export BROWSER="/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+#!/bin/bash
+
+# Chemin du répertoire à vérifier
+DIR="$HOME/Workspace/sandbox"
+
+# Vérifier si le répertoire existe
+if [ -d "$DIR" ]; then
+    # Exporter les variables d'environnement
+    export SANDBOX_HOME="$HOME/Workspace/sandbox"
+    if grep -qi Microsoft /proc/version; then
+        export BROWSER="/mnt/c/Program Files (x86)/Microsoft/Edge/Application/msedge.exe"
+    fi
+
+    # Fonction pour démarrer Jupyter Lab dans l'environnement sandbox
+    function jl() {
+        ve "$SANDBOX_HOME"
+        jupyter lab
+        deactivate
+        cd "$HOME" || return
+    }
+
+    # Fonction pour démarrer IPython dans l'environnement sandbox
+    function ipy() {
+        ve "$SANDBOX_HOME"
+        ipython
+        deactivate
+        cd "$HOME" || return
+    }
 fi
 
-function jl() { # to start jupyter lab sandbox environment
-    ve "$SANDBOX_HOME"
-    jupyter lab
-    deactivate
-    cd "$HOME" || return
-}
-
-function ipy() { # to start ipython in the sandbox environment
-    ve "$SANDBOX_HOME"
-    ipython
-    deactivate
-    cd "$HOME" || return
-}
-
 ############################################################################
-## Git                                                                     #
+## Git completion                                                          #
 ############################################################################
 
-## Git completion
-if [ ! -f "$HOME/.git-completion.bash" ]; then
-    echo "file does not exist"
-    curl https://raw.githubusercontent.com/git/git/master/contrib/completion/git-completion.bash -o ~/.git-completion.bash
+REPO="git/git"
+FILE_PATH="contrib/completion/git-completion.bash"
+LOCAL_FILE="$HOME/.git-completion.bash"
+API_URL="https://api.github.com/repos/$REPO/commits?path=$FILE_PATH&per_page=1"
+
+# Fonction pour obtenir le dernier commit SHA du fichier depuis GitHub
+get_latest_commit_sha() {
+    curl -s "$API_URL" | jq -r '.[0].sha'
+}
+
+# Fonction pour obtenir le dernier commit SHA du fichier local
+get_local_commit_sha() {
+    head -n 1 "$LOCAL_FILE.sha"
+}
+
+# Télécharger le fichier distant
+download_file() {
+    curl -s "https://raw.githubusercontent.com/$REPO/master/$FILE_PATH" -o "$LOCAL_FILE"
+}
+
+# Obtenir le dernier commit SHA du fichier depuis GitHub
+LATEST_COMMIT_SHA=$(get_latest_commit_sha)
+
+# Vérifier si le fichier local existe et s'il a un SHA enregistré
+if [ -f "$LOCAL_FILE" ] && [ -f "$LOCAL_FILE.sha" ]; then
+    # Obtenir le dernier commit SHA du fichier local
+    LOCAL_COMMIT_SHA=$(get_local_commit_sha)
+
+    # Comparer les SHA
+    if [ "$LATEST_COMMIT_SHA" != "$LOCAL_COMMIT_SHA" ]; then
+        # Mettre à jour le fichier local
+        download_file
+        echo "$LATEST_COMMIT_SHA" >"$LOCAL_FILE.sha"
+        echo "Le fichier $LOCAL_FILE a été mis à jour."
+    # else
+    #     echo "Le fichier $LOCAL_FILE est déjà à jour."
+    fi
+else
+    # Télécharger le fichier et enregistrer le SHA
+    download_file
+    echo "$LATEST_COMMIT_SHA" >"$LOCAL_FILE.sha"
+    echo "Le fichier $LOCAL_FILE a été téléchargé."
 fi
-source "$HOME/.git-completion.bash"
+
+# Sourcer le fichier local
+source "$LOCAL_FILE"
 
 ############################################################################
 ## NodeJS                                                                  #
@@ -175,12 +228,7 @@ fi
 ############################################################################
 # colored GCC warnings and errors                                          #
 ############################################################################
-export GCC_COLORS='error=01;31:'\
-'warning=01;35:'\
-'note=01;36:'\
-'caret=01;32:'\
-'locus=01:'\
-'quote=01'
+export GCC_COLORS='error=01;31:''warning=01;35:''note=01;36:''caret=01;32:''locus=01:''quote=01'
 
 ############################################################################
 ## Remove any potential duplicate paths present in the PATH variable.      #                                                  #
