@@ -146,6 +146,12 @@ function ve() {
 
 # Display Rules
 function rule() {
+    if [ $# -eq 0 ]; then
+        local offset=0   # No parameters, no space before the rule
+    else
+        local offset=$1  # The first parameter is the offset in spaces
+    fi
+
     # Determine the width of the terminal
     local width=$(tput cols)
 
@@ -155,12 +161,13 @@ function rule() {
     # Replace each 0 with the sequence +123456789
     rule=$(echo $rule | sed 's/0/+123456789/g')
 
-    # Display the rule (truncated to terminal width)
-    echo "${rule:0:$width}"
+    # Add offset spaces before displaying the rule
+    local spaces=$(printf "%${offset}s" "")
+    echo "${spaces}${rule:0:$width-$offset}"
 }
 
-# Integration of the `rule` function with the `head` command, with `rule`
-# being called before `head`.
+# Integrating the rule function with the head command, where rule is invoked
+# before head.
 function rh() {
     # Call the rule function to display the dynamic rule
     rule
@@ -169,8 +176,30 @@ function rh() {
     head "$@"
 }
 
-# Integration of the `rule` function with the `tail` command, with `rule`
-# being called before `tail`.
+# Integrating the rule function with the head command, where rule is invoked
+# before head, and preceding the display with the line length.
+function rhc() {
+    # Call the rule function to display the dynamic rule
+    rule 5
+
+    # Use head to get the first n lines
+    head_lines=$(head "$@")
+
+    # Process each line to prepend its length (always 4 characters)
+    while IFS= read -r line; do
+        # Calculate the length of the line
+        line_length=$(echo -n "$line" | wc -c)
+        
+        # Format line_length to always be 4 characters with leading spaces
+        line_length=$(printf "%4s" "$line_length")
+        
+        # Print the formatted output
+        printf "%s %s\n" "$line_length" "$line"
+    done <<< "$head_lines"
+}
+
+# Integrating the rule function with the tail command, where rule is invoked
+# before tail.
 function th() {
     # Call the rule function to display the dynamic rule
     rule
